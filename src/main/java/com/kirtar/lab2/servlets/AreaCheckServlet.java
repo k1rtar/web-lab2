@@ -3,64 +3,89 @@ package com.kirtar.lab2.servlets;
 import com.kirtar.lab2.models.Hit;
 import com.kirtar.lab2.models.HitHistory;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Map;
+
+import com.google.gson.Gson;
 
 @WebServlet("/check-area")
 public class AreaCheckServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-//        request.setCharacterEncoding("UTF-8");
+        request.setCharacterEncoding("UTF-8");
         long startTime = System.currentTimeMillis();
 
-        String xString = request.getParameter("x");
-        String yString = request.getParameter("y").replace(',', '.');
-        String rString = request.getParameter("r");
+        BufferedReader reader = request.getReader();
+        String line;
+        StringBuilder requestBody = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            requestBody.append(line);
+        }
+        Gson gson = new Gson();
+        Map<String, Object> map = gson.fromJson(requestBody.toString(), Map.class);
+        String xString = (String) request.getAttribute("x");
+        String yString = (String) request.getAttribute("y");
+        yString = yString.replace(',', '.');
+        String rString = (String) request.getAttribute("r");
+
         boolean isValidInput = checkValueRange(xString, yString, rString);
 
-        if (isValidInput) {
-            int x = Integer.parseInt(xString);
+        if ((isValidInput)) {
+
+            double x = Double.parseDouble(xString);
             double y= Double.parseDouble(yString);
             int r = Integer.parseInt(rString);
-            System.out.println("Ареаче");
             boolean isHit = hit(x, y, r);
-
-            //OffsetDateTime currentTimeObject = OffsetDateTime.now(ZoneOffset.UTC);
 
             ZoneId zone = ZoneId.of("Europe/Moscow");
             ZonedDateTime time = ZonedDateTime.now(zone);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String currentTime = time.format(formatter);
-            String executionTime = String.valueOf(System.currentTimeMillis() - startTime);
-
+            double executionTime = System.currentTimeMillis() - startTime;
+            double executionTimeInSeconds = executionTime / 1000000.0; // Переводим микросекунды в секунды
+            DecimalFormat df = new DecimalFormat("#.######"); // Форматирование с точностью до 6 знаков после запятой
+            DecimalFormat numf = new DecimalFormat("#.###############;-#.##############");
+            String formattedExecutionTime = df.format(executionTimeInSeconds);
+            String formattedX = numf.format(x).format(String.valueOf(x)).replace(",", ".");
+            String formattedY = numf.format(y).format(String.valueOf(y)).replace(",", ".");
+            request.setAttribute("formattedExecutionTime", formattedExecutionTime);
             HitHistory hitHistory = (HitHistory) request.getSession().getAttribute("history");
-            //if (hitHistory == null) hitHistory = new HitHistory();
-            hitHistory.getHitHistory().add(new Hit(x, y, r, isHit, currentTime, executionTime));
+            if (hitHistory == null) hitHistory = new HitHistory();
+            hitHistory.getHitHistory().add(new Hit(Double.parseDouble(formattedX), Double.parseDouble(formattedY), r, isHit, currentTime, formattedExecutionTime));
             request.getSession().setAttribute("history", hitHistory);
+            String jsonData = gson.toJson(hitHistory);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            response.getWriter().write(jsonData);
+            response.setStatus(200);
         }
 
-        getServletContext().getRequestDispatcher("/index.jsp").forward(request, response);
+
     }
 
-    private boolean checkValueRange(String xString,String yString, String rString) {
+    private boolean checkValueRange(String xString,String yString, String rString){
         try {
-            Integer[] xRange = {-4, -3, -2, -1, 0, 1, 2, 3, 4};
-            int x = Integer.parseInt(xString);
+            double x = Double.parseDouble(xString);
 
             double y = Double.parseDouble(yString);
 
             Integer[] rRange = {1, 2, 3, 4, 5};
             int r = Integer.parseInt(rString);
 
-            return Arrays.asList(xRange).contains(x) && (y>-3 && y<3) &&
+            return x<=4 && x>=-4 && (y>-3 && y<3) &&
                     Arrays.asList(rRange).contains(r);
 
         } catch (NumberFormatException exception) {
@@ -68,11 +93,11 @@ public class AreaCheckServlet extends HttpServlet {
         }
     }
 
-    private boolean hit(int x,double y,int r) {
-        boolean rectangle = x<=0 && x>=r && y<=0 && y>= (double) -r /2;
+    private boolean hit(double x,double y,int r) {
+        boolean rectangle = x<=0 && x>=-r && y<=0 && y>= (double) -r /2;
         boolean triangle = x<=0 && y>=0 && x>=-r && y<=r && y<=x+r;
         boolean quadrant = y>=0 && y<=r && x>=0 && x<=r && x*x+y*y<=r*r;
-        return rectangle && triangle && quadrant;
+        return rectangle || triangle || quadrant;
     }
 
 }

@@ -2,7 +2,7 @@ package com.kirtar.lab2.models;
 
 import java.io.Serializable;
 public class Hit implements Serializable{
-    private int x;
+    private double x;
     private double y;
     private int r;
     private String currentTime;
@@ -14,7 +14,7 @@ public class Hit implements Serializable{
         this.executionTime = "";
     }
 
-    public Hit(int x, double y, int r, boolean hit, String currentTime, String executionTime){
+    public Hit(double x, double y, int r, boolean hit, String currentTime, String executionTime){
         this.x = x;
         this.y = y;
         this.r = r;

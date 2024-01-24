@@ -1,16 +1,18 @@
 package com.kirtar.lab2.servlets;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.google.gson.Gson;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Map;
 
-import static java.lang.Integer.parseInt;
+
 
 @WebServlet("/controller")
 public class ControllerServlet extends HttpServlet {
@@ -22,126 +24,47 @@ public class ControllerServlet extends HttpServlet {
 
 
     @Override
-    protected void doPost(HttpServletRequest request,HttpServletResponse response) throws IOException,ServletException{
-        System.out.println("DOPOST!");
-        PrintWriter printWriter = response.getWriter();
-        printWriter.println("<html>");
-        printWriter.println("<h1>JJJJ</h1>");
-        printWriter.print(request.getParameter("x"));
-        printWriter.println("</html>");
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        BufferedReader reader = request.getReader();
+        String line;
+        StringBuilder requestBody = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            requestBody.append(line);
+        }
+        Gson gson = new Gson();
+        Map<String, Object> map = gson.fromJson(requestBody.toString(), Map.class);
+        String x,y,r;
+        if (!(map.get("x") instanceof String)){x=Double.toString((Double)map.get("x"));}
+        else{x = (String) map.get("x");}
+        if (!(map.get("y") instanceof String)){y=Double.toString((Double)map.get("y"));}
+        else{y = (String) map.get("y");}
+        if (!(map.get("r") instanceof String)){r=Double.toString((Double)map.get("r"));}
+        else{r = (String) map.get("r");}
+        request.setAttribute("x",x);
+        request.setAttribute("y",y);
+        request.setAttribute("r",r);
 
-
-
-        if (request.getParameter("clearhistory")!=null && request.getParameter("clearhistory").equals("true")){
-            System.out.println("ALLO");
+        if (request.getParameter("clearhistory") != null && request.getParameter("clearhistory").equals("true")) {
             getServletContext().getRequestDispatcher("/clear-history").forward(request, response);
 
         }
-        else if (request.getParameter("x")!=null && request.getParameter("y")!=null && request.getParameter("r")!=null){
+            else if (map.get("x")!=null && map.get("y")!=null && map.get("r")!=null){
             getServletContext().getRequestDispatcher("/check-area").forward(request, response);
-        }
-        else{
-            System.out.println(request.getParameter("x"));
-            System.out.println(request.getParameter("y"));
-            System.out.println(request.getParameter("r"));
-            System.out.println("434343434343434");
+        } else {
+            sendError(response, "Data is incorrect");
             getServletContext().getRequestDispatcher("/index.jsp").forward(request, response);
         }
     }
+    public static void sendError(HttpServletResponse resp, String message) throws IOException {
+        Gson json = new Gson();
+        Map<String, Object> jsonResponse = new HashMap<>() {{
+            put("error", "Data is incorrect");
+            put("status", "UNPROCESSABLE_ENTITY");
+        }};
 
+        resp.setContentType("application/json");
+        resp.getWriter().write(json.toJson(jsonResponse));
+        resp.setStatus(422);
+    }
+}
 
-//    @Override
-//    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-//        System.out.println("DOPOST!");
-//        PrintWriter printWriter = response.getWriter();
-//        printWriter.println("<html>");
-//        printWriter.println("<h1>JJJJ</h1>");
-//        printWriter.print(request.getParameter("x"));
-//        printWriter.println("</html>");
-//
-//        if (request.getParameter("clearhistory") != null && request.getParameter("clearhistory").equals("true")) {
-//            System.out.println("UFF");
-//            getServletContext().getRequestDispatcher("/clear-history").forward(request, response);
-//
-//        } else {
-//            Map<String, String[]> parameterMap = request.getParameterMap();
-//
-//            if (parameterMap.containsKey("x") && parameterMap.containsKey("y") && parameterMap.containsKey("r")) {
-//                String[] xVal = parameterMap.get("x");
-//                String[] yVal = parameterMap.get("y");
-//                String[] rVal = parameterMap.get("r");
-//                System.out.println("Очко");
-//                System.out.println(xVal[0]);
-//                //if (request.getParameter("x")!=null && request.getParameter("y")!=null && request.getParameter("r")!=null){
-//                getServletContext().getRequestDispatcher("/check-area").forward(request, response);
-                //}
-//            else{
-//                System.out.println(request.getParameter("x"));
-//                System.out.println(request.getParameter("y"));
-//                System.out.println(request.getParameter("r"));
-//                System.out.println("434343434343434");
-//                getServletContext().getRequestDispatcher("/index.jsp").forward(request, response);
-//            }
-           // }
-        //}
-//    @Override
-//    protected void doPost(HttpServletRequest request,HttpServletResponse response) throws IOException,ServletException{
-//        System.out.println("DOPOST!");
-//        PrintWriter printWriter = response.getWriter();
-//        printWriter.println("<html>");
-//        printWriter.println("<h1>JJJJ</h1>");
-//        printWriter.print(request.getParameter("x"));
-//        printWriter.println("</html>");
-//        String xVal = request.getParameter("x");  // Это массив, так как может быть несколько значений
-//        String yVal = request.getParameter("y");
-//        String rVal = request.getParameter("r");
-//
-//        System.out.println(xVal);
-//        System.out.println(yVal);
-//        System.out.println(rVal);
-//        if (request.getParameter("clearhistory")!=null && request.getParameter("clearhistory").equals("true")){
-//            System.out.println("UFF");
-//            getServletContext().getRequestDispatcher("/clear-history").forward(request, response);
-//
-//        }
-//        else if (request.getParameter("x")!=null && request.getParameter("y")!=null && request.getParameter("r")!=null){
-//            getServletContext().getRequestDispatcher("/check-area").forward(request, response);
-//        }
-//        else{
-//            System.out.println(request.getParameter("x"));
-//            System.out.println(request.getParameter("y"));
-//            System.out.println(request.getParameter("r"));
-//            System.out.println("434343434343434");
-//            getServletContext().getRequestDispatcher("/index.jsp").forward(request, response);
-//        }
-    //}
-
-
-}//}
-
-
-//    @Override
-//    protected void doPost(HttpServletRequest request,HttpServletResponse response) throws IOException,ServletException{
-//        System.out.println("DOPOST!");
-//        PrintWriter printWriter = response.getWriter();
-//        printWriter.println("<html>");
-//        printWriter.println("<h1>JJJJ</h1>");
-//        printWriter.print(request.getParameter("x"));
-//        printWriter.println("</html>");
-//
-//        if (request.getParameter("clearhistory")!=null && request.getParameter("clearhistory").equals("true")){
-//            System.out.println("UFF");
-//            getServletContext().getRequestDispatcher("/clear-history").forward(request, response);
-//
-//        }
-//        else if (request.getParameter("x")!=null && request.getParameter("y")!=null && request.getParameter("r")!=null){
-//            getServletContext().getRequestDispatcher("/check-area").forward(request, response);
-//        }
-//        else{
-//            System.out.println(request.getParameter("x"));
-//            System.out.println(request.getParameter("y"));
-//            System.out.println(request.getParameter("r"));
-//            System.out.println("434343434343434");
-//            getServletContext().getRequestDispatcher("/index.jsp").forward(request, response);
-//        }
-//    }

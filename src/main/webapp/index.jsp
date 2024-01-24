@@ -1,19 +1,27 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<jsp:useBean id="history" scope="session" class="com.kirtar.lab2.models.HitHistory"/>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="css/styles.css">
-    <script src="js/script.js" defer></script>
+    <script src="js/plot.js" defer></script>
+    <script src="js/Validator.js" defer></script>
+    <script src="js/start.js" defer></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/cleartable.js" defer></script>
+
+
     <title>Lab1</title>
 </head>
 <body>
 <header>
     <img src="img/logo.png" alt="Логотип Итмо" id = "logo">
-    <span class="student"><strong>Таранов Кирилл Викторович, группа P3219, вариант 2966</strong></span>
+    <span class="student"><strong>Таранов Кирилл Викторович, группа P3219, вариант 29786</strong></span>
     <span><strong> </strong></span>
 </header>
 
@@ -21,14 +29,16 @@
 
     <tr>
         <td>
-            <img src="img/area.png" alt="Область попадания" class="area">
+
+            <canvas width="400" height="400" id="plot"></canvas>
+
         </td>
     </tr>
 
     <tr>
         <td class="coordinates-container">
-<%--            <form action="php/server.php" method="GET">--%>
-            <form action="${pageContext.request.contextPath}/controller" method="POST">
+
+                <form id = "check-form" novalidate onsubmit="handleForm()">
                 <table class="form-table">
                     <tr>
                         <td>
@@ -67,8 +77,7 @@
                             <input name="y"   placeholder ="Введите число в диапазоне (-3;3)" id="y-input" maxlength="17">
                         </td>
 
-                    <tr><td></td><td><div id="error-message"></div></td></tr>
-
+                        <div id="error-message"></div>
 
     <tr><td></td>
         <td>
@@ -83,25 +92,35 @@
 
 <tr>
     <td>
-        <table class="results-table">
+        <table class="results-table" id="results">
             <tr>
                 <td>X</td>
                 <td>Y</td>
                 <td>R</td>
+
                 <td>Результат</td>
                 <td>Текущее время</td>
                 <td>Время выполнения</td>
             </tr>
-<%--        <%HitHistory history = (HitHistory) request.getSession().getAttribute("history");%>--%>
-            <jsp:useBean id="history" scope="session" class="com.kirtar.lab2.models.HitHistory"/>
+
             <c:forEach var="hit" items="${history.hitHistory}">
                 <tr>
+
                     <td>${hit.x}</td>
                     <td>${hit.y}</td>
                     <td>${hit.r}</td>
-                    <td>${hit.hit}</td>
+                    <c:choose>
+                        <c:when test="${hit.hit}">
+                            <td style="color:green">Попадание</td>
+                        </c:when>
+                        <c:otherwise>
+                            <td style="color:red">Промах</td>
+                        </c:otherwise>
+                    </c:choose>
+
                     <td>${hit.currentTime}</td>
-                    <td>${hit.executionTime}</td>
+                    <td>${hit.executionTime} c</td>
+
                 </tr>
             </c:forEach>
 
@@ -111,9 +130,8 @@
 </tr>
 <tr>
     <td>
-<%--        <form method="DELETE" action="php/cleartable.php">--%>
-        </form>
-            <input type="submit" value="Очистить таблицу" class="clear-btn" />
+        <form id="clear-table-form">
+            <input type="submit" value="Очистить таблицу" class="clear-btn" id="clear-table-button"/>
         </form>
     </td>
 </tr>

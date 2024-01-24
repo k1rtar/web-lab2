@@ -20,7 +20,7 @@ header {
     margin-right: 30px;
     box-shadow: 4px 4px 30px rgba(0, 0, 0, 0.25);
     background-color: rgb(234, 194, 129);
-    border-top-right-radius: px;
+    border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
     padding: 0px;
     transform: scale(1.1);
@@ -32,7 +32,7 @@ body {
     padding: 0;
     width: 100%;
     height: 100%;
-    background-image: linear-gradient(110deg, blanchedalmond, rgb(234, 194, 129));
+    background:rgb(234, 194, 129);
 }
 .main{
     margin-left: auto;
@@ -91,6 +91,8 @@ label{
     box-shadow: #000;
 }
 .results-table td {
+    width:100%;
+    width: 15em;
     padding: 10px;
     padding-left: 20px;
     padding-right: 20px;
@@ -100,6 +102,11 @@ label{
     font-size: x-large;
     /* width: auto; */
 }
+
+
+    /*white-space: nowrap; !* Предотвращает перенос текста *!*/
+    /*overflow: hidden; !* Скрывает текст, который не умещается в столбце *!*/
+    /*text-overflow: ellipsis; !* Отображает многоточие (...) для обрезанного текста *!*/
 
 .clear-btn{
     background: #fff;
@@ -210,3 +217,5 @@ label{
 .custom-checkbox input[type="checkbox"]:checked + label::before {
     background-color: #007bff; /* Цвет фона при выборе */
 }
+
+
